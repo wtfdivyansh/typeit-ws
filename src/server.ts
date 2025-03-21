@@ -26,9 +26,8 @@ wss.on("connection", (ws) => {
     switch (data.type) {
       case "join":
         const room = rooms.addRoom(data.room, data.roomCode);
-      
         users.addUserToRoom(data.userId, room);
-        rooms.addMember(data.roomId, data.roomCode);
+        rooms.addMember(data.roomCode, data.user);
         ws.send(JSON.stringify({ type: "join",room: room }));
         break;
     }
