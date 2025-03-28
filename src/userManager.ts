@@ -2,7 +2,11 @@ import { User, Room } from "./types";
 import WebSocket from "ws";
 
 export class UserManager {
-  private users: Map<string, User> = new Map();
+  private users: Map<string, User> 
+
+  constructor() {
+    this.users = new Map();
+  }
 
   addUser(user: Omit<User, "ws">, ws: WebSocket ,userId: string) {
     if (this.users.has(userId)) return;

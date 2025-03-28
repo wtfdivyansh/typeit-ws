@@ -11,7 +11,15 @@ export type User = {
 export type Room = {
   id: string;
   memberWs: Map<string, WebSocket>;
+  messages: Message[];
+
 };
+export type Message= {
+    id:string
+    name?:string
+    image?:string
+    message:string
+}
 
 export type ReqEvents =
   | "USER_JOIN"

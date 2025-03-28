@@ -1,8 +1,15 @@
-import { Room, User } from "./types";
+import {  Message, Room, User } from "./types";
 import WebSocket from "ws";
 export class RoomManager {
-  private rooms: Map<string, Room> = new Map();
-  private codeToUsers: Map<string, Omit<User, "ws">[]> = new Map();
+  private rooms: Map<string, Room> 
+  private codeToUsers: Map<string, Omit<User, "ws">[]>
+
+
+
+  constructor() {
+    this.rooms = new Map();
+    this.codeToUsers = new Map();
+  }
 
   addRoom(room: Omit<Room, "members">, code: string): Room {
     if (this.rooms.has(code)) {
@@ -25,11 +32,8 @@ export class RoomManager {
     if(room.memberWs.has(userId)) return;
     room.memberWs.set(userId, ws);
     const prevUsers = this.codeToUsers.get(roomCode) || [];
-    // console.log("prevUsers",prevUsers)
-    // console.log("user",user)
     this.codeToUsers.set(roomCode, [...new Set(prevUsers), user]);
-    console.log("codeToUsers",this.rooms.get(roomCode)?.memberWs.size)
-    console.log("codeToUsers",this.codeToUsers.get(roomCode))
+
   }
   removeRoom(code: string) {
     this.rooms.delete(code);
@@ -53,4 +57,10 @@ export class RoomManager {
       users.splice(users.findIndex((user) => user.id === userId), 1);
     });
   }
+  addMessage(roomCode: string, message: Message ) {
+    const room = this.getRoom(roomCode);
+    if (!room) return;
+    room.messages.push(message);
+  }
+
 }

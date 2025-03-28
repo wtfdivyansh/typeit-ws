@@ -49,11 +49,6 @@ wss.on("connection", (ws) => {
         console.log(prevUsers);
         rooms.broadcast(data.data.roomCode, {
           type: "USER_JOINED",
-          // user: {
-          //   id: data.data.userId,
-          //   name: data.data.user.name,
-          //   image: data.data.user.image,
-          // },
           users:
             prevUsers.length > 0
               ? prevUsers.map((user) => ({
