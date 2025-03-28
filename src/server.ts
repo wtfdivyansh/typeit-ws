@@ -3,6 +3,7 @@ import http from "http";
 import WebSocket, { WebSocketServer } from "ws";
 import { UserManager } from "./userManager";
 import { RoomManager } from "./roomManager";
+import { Payload } from "./types";
 
 const app = express();
 const server = http.createServer(app);
@@ -19,16 +20,38 @@ wss.on("connection", (ws) => {
 
   ws.on("message", (message) => {
     console.log(`Received: ${message}`);
-    const data = JSON.parse(message.toString());
-    if(!users.getUser(data.userId)) {
-     users.addUser(data.user, data.user.ws)
+    const data = JSON.parse(message.toString())
+    console.log(data.data.user);
+    if (!users.getUser(data.userId)) {
+      users.addUser(
+        {
+          name: data.data.user.name,
+          image: data.data.user.image,
+          rooms: [],
+        },
+        ws,
+        data.data.userId
+      );
     }
     switch (data.type) {
-      case "join":
-        const room = rooms.addRoom(data.room, data.roomCode);
-        users.addUserToRoom(data.userId, room);
-        rooms.addMember(data.roomCode, data.user);
-        ws.send(JSON.stringify({ type: "join",room: room }));
+      case "USER_JOIN":
+        const room = rooms.addRoom(data.data.room, data.data.roomCode);
+        users.addUserToRoom(data.data.userId, room);
+        rooms.addMember(data.data.roomCode, data.data.userId, ws,data.user);
+        const prevUsers = rooms.getUsersFromCode(data.data.roomCode);
+        rooms.broadcast(data.data.roomCode, {
+          type: "USER_JOINED",
+          user: {
+            id: data.data.userId,
+            name: data.data.user.name,
+            image: data.data.user.image,
+          },
+          users: prevUsers,
+          stats: {
+            wpm: 0,
+            accuracy: 0,
+          },
+        });
         break;
     }
   });
