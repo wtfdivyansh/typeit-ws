@@ -22,14 +22,23 @@ export class RoomManager {
   addMember(roomCode:string, userId: string, ws: WebSocket,user: Omit<User, "ws">) {
     const room = this.getRoom(roomCode);
     if (!room) return;
+    if(room.memberWs.has(userId)) return;
     room.memberWs.set(userId, ws);
-    this.codeToUsers.set(roomCode, [...this.codeToUsers.get(roomCode)!, user]);
+    const prevUsers = this.codeToUsers.get(roomCode) || [];
+    // console.log("prevUsers",prevUsers)
+    // console.log("user",user)
+    this.codeToUsers.set(roomCode, [...new Set(prevUsers), user]);
+    console.log("codeToUsers",this.rooms.get(roomCode)?.memberWs.size)
+    console.log("codeToUsers",this.codeToUsers.get(roomCode))
   }
   removeRoom(code: string) {
     this.rooms.delete(code);
   }
-  getUsersFromCode(code: string): Omit<User, "ws">[] {
-    return this.codeToUsers.get(code) || [];
+  getUsersFromCode(code: string): Omit<User, "ws" | "rooms">[] {
+    const users = this.codeToUsers.get(code)
+    console.log(users?.length)
+    if(!users) return []
+    return [...new Set(users)]
   }
   broadcast(roomCode: string, message: any) {
     const room = this.getRoom(roomCode);
@@ -37,6 +46,11 @@ export class RoomManager {
 
     room.memberWs.forEach((member) => {
       member.send(JSON.stringify(message));
+    });
+  }
+  disconnectUser(userId: string) {
+    this.codeToUsers.forEach((users) => {
+      users.splice(users.findIndex((user) => user.id === userId), 1);
     });
   }
 }

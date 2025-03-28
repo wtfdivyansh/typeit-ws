@@ -20,11 +20,12 @@ wss.on("connection", (ws) => {
 
   ws.on("message", (message) => {
     console.log(`Received: ${message}`);
-    const data = JSON.parse(message.toString())
+    const data = JSON.parse(message.toString());
     console.log(data.data.user);
     if (!users.getUser(data.userId)) {
       users.addUser(
         {
+          id: data.data.userId,
           name: data.data.user.name,
           image: data.data.user.image,
           rooms: [],
@@ -37,16 +38,34 @@ wss.on("connection", (ws) => {
       case "USER_JOIN":
         const room = rooms.addRoom(data.data.room, data.data.roomCode);
         users.addUserToRoom(data.data.userId, room);
-        rooms.addMember(data.data.roomCode, data.data.userId, ws,data.user);
-        const prevUsers = rooms.getUsersFromCode(data.data.roomCode);
+      
+        rooms.addMember(
+          data.data.roomCode,
+          data.data.userId,
+          ws,
+          data.data.user
+        );
+  const prevUsers = rooms.getUsersFromCode(data.data.roomCode);
+        console.log(prevUsers);
         rooms.broadcast(data.data.roomCode, {
           type: "USER_JOINED",
-          user: {
-            id: data.data.userId,
-            name: data.data.user.name,
-            image: data.data.user.image,
-          },
-          users: prevUsers,
+          // user: {
+          //   id: data.data.userId,
+          //   name: data.data.user.name,
+          //   image: data.data.user.image,
+          // },
+          users:
+            prevUsers.length > 0
+              ? prevUsers.map((user) => ({
+                  id: user.id,
+                  name: user.name,
+                  image: user.image,
+                  stats: {
+                    wpm: 0,
+                    accuracy: 0,
+                  },
+                }))
+              : [],
           stats: {
             wpm: 0,
             accuracy: 0,
@@ -56,7 +75,7 @@ wss.on("connection", (ws) => {
     }
   });
 
-  ws.on("close", () => {
+  ws.on("close", (ws) => {
     console.log("Client disconnected");
   });
 });
