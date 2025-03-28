@@ -40,7 +40,7 @@ class WebSocketManager {
             this.handleUserJoin(data, ws);
             break;
           case "ROOM_MESSAGE":
-            this.handleRoomMessage(data, ws);
+            this.handleRoomMessage(data);
             break;
         }
       });
@@ -83,12 +83,24 @@ class WebSocketManager {
         accuracy: 0,
       },
     });
+     const message = {
+       id: crypto.randomUUID(),
+       name: "server",
+       message: `${data.data.user.name} joined the room`,
+     };
+
+     this.handleRoomMessage({
+       data: {
+         roomCode: data.data.roomCode,
+         message: message,
+       },
+     });
   }
-  private handleRoomMessage(data: any, ws: WebSocket) {
+  private handleRoomMessage(data: any) {
     const { roomCode, message } = data.data;
     this.rooms.addMessage(roomCode, message);
     this.rooms.broadcast(roomCode, {
-      type: "ROOM_MESSAGE",
+      type: "ROOM_MESSAGE_RECEIVED",
       message: message,
     });
     return;
