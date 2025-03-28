@@ -25,6 +25,7 @@ export type ReqEvents =
   | "USER_JOIN"
   | "USER_LEAVE "
   | "USER_PROGRESS"
+  | "ROOM_MESSAGE"
   | "RACE_END"
   | "USER_DISCONNECT"
   | "RACE_START";
