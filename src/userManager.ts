@@ -25,7 +25,12 @@ export class UserManager {
     }
   }
 
-  removeUser(id: string) {
-    this.users.delete(id);
+  removeUser(ws:WebSocket) {
+    this.users.forEach((user) => {
+        if(user.ws === ws){
+          this.users.delete(user.id);
+        }
+    });
+    
   }
 }

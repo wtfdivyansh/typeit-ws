@@ -10,6 +10,7 @@ export type User = {
 
 export type Room = {
   id: string;
+  host: string;
   memberWs: Map<string, WebSocket>;
   messages: Message[];
 

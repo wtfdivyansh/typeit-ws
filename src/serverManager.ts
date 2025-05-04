@@ -20,7 +20,7 @@ class WebSocketManager {
       ws.on("message", (message) => {
         console.log(`Received: ${message}`);
         const data = JSON.parse(message.toString());
-        console.log(data.data.user);
+        console.log("user details : ",data.data.user);
 
         if (!this.users.getUser(data.userId)) {
           this.users.addUser(
@@ -47,11 +47,12 @@ class WebSocketManager {
 
       ws.on("close", () => {
         console.log("Client disconnected");
+        this.handleDissconnect(ws);
       });
     });
   }
   private handleUserJoin(data: any, ws: WebSocket) {
-    const room = this.rooms.addRoom(data.data.room, data.data.roomCode);
+    const room = this.rooms.addRoom(data.data.room, data.data.roomCode,data.data.userId);
     this.users.addUserToRoom(data.data.userId, room);
 
     this.rooms.addMember(
@@ -62,7 +63,7 @@ class WebSocketManager {
     );
 
     const prevUsers = this.rooms.getUsersFromCode(data.data.roomCode);
-    console.log(prevUsers);
+    console.log("prev",prevUsers);
 
     this.rooms.broadcast(data.data.roomCode, {
       type: "USER_JOINED",
@@ -87,6 +88,7 @@ class WebSocketManager {
        id: crypto.randomUUID(),
        name: "server",
        message: `${data.data.user.name} joined the room`,
+       isServer: true,
      };
 
      this.handleRoomMessage({
@@ -97,13 +99,19 @@ class WebSocketManager {
      });
   }
   private handleRoomMessage(data: any) {
-    const { roomCode, message } = data.data;
+    const { roomCode, message} = data.data;
+    console.log("SERVER MESSAGE : ",message)
     this.rooms.addMessage(roomCode, message);
     this.rooms.broadcast(roomCode, {
-      type: "ROOM_MESSAGE_RECEIVED",
+      type: "ROOM_SYSYTEM_JOIN",
       message: message,
     });
     return;
+  }
+  private handleDissconnect(ws:WebSocket){
+    this.users.removeUser(ws);
+    this.rooms.removeMember(ws);
+
   }
 }
 
